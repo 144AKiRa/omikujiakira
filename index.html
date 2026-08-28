@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>丹與塔的專屬抽籤程式</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+        #result {
+            font-size: 120px;
+            font-weight: bold;
+            color: #d9534f;
+            margin-bottom: 30px;
+            min-height: 150px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        button {
+            padding: 15px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="result">準備抽籤</div>
+    <button onclick="drawFortune()">抽出今日運勢</button>
+
+    <script>
+        // 設定籤表、機率與對應的音檔檔名
+        const fortunes = [
+            { name: "太吉", chance: 1, audio: "taiji.mp3" },
+            { name: "大吉", chance: 15, audio: "daji.mp3" },
+            { name: "好吉", chance: 13, audio: "haoji.mp3" },
+            { name: "吉", chance: 35, audio: "ji.mp3" },
+            { name: "小吉", chance: 30, audio: "xiaoji.mp3" },
+            { name: "末吉", chance: 5, audio: "moji.mp3" },
+            { name: "凶", chance: 1, audio: "xiong.mp3" }
+        ];
+
+        let currentAudio = null;
+
+        function drawFortune() {
+            // 產生 0 到 99.99 之間的亂數
+            let rand = Math.random() * 100;
+            let cumulative = 0;
+            let selectedFortune = null;
+
+            // 根據機率區間判斷抽中哪一支籤
+            for (let i = 0; i < fortunes.length; i++) {
+                cumulative += fortunes[i].chance;
+                if (rand < cumulative) {
+                    selectedFortune = fortunes[i];
+                    break;
+                }
+            }
+
+            // 顯示文字
+            document.getElementById("result").innerText = selectedFortune.name;
+
+            // 停止上一首正在播放的語音（避免連抽時聲音重疊）
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // 播放對應的語音
+            currentAudio = new Audio(selectedFortune.audio);
+            currentAudio.play().catch(e => {
+                console.log("請確認音檔是否存在，或瀏覽器是否允許自動播放聲音。");
+            });
+        }
+    </script>
+</body>
+</html>
