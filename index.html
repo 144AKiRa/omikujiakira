@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>藥你好運抽籤程式</title>
-   <style>
+    <style>
         body {
             display: flex;
             flex-direction: column;
@@ -11,16 +11,19 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f9;
+            background-color: #121212; /* 替換為純黑底色 */
             font-family: "Microsoft JhengHei", sans-serif;
+            color: #ffffff;
         }
         #result {
             font-size: 120px;
             font-weight: bold;
-            color: #d9534f;
+            color: #ff4757; /* 調整為適合黑底的高亮度紅色 */
             margin-bottom: 30px;
-            min-height: 150px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            min-height: 160px;
+            text-shadow: 0 0 20px rgba(255, 71, 87, 0.4); /* 加上微微的發光感 */
+            display: flex;
+            align-items: center;
         }
         button {
             padding: 15px 40px;
@@ -30,21 +33,61 @@
             color: white;
             border: none;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        button:hover {
+            background-color: #4cae4c;
         }
         button:active {
             transform: scale(0.95);
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 抽籤時的跳動動畫 */
+        .rolling {
+            animation: shake 0.1s infinite;
+            opacity: 0.8;
+            color: #a4b0be;
+            text-shadow: none;
+        }
+
+        /* 結果揭曉的彈出動畫 */
+        .reveal {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
 
     <div id="result">準備抽籤</div>
-    <button onclick="drawFortune()">抽出今日運勢</button>
+    <button id="drawBtn" onclick="startDraw()">抽出今日運勢</button>
 
     <script>
-        // 設定籤表、機率與對應的音檔檔名
         const fortunes = [
             { name: "太吉", chance: 1, audio: "taiji.mp3" },
             { name: "大吉", chance: 15, audio: "daji.mp3" },
@@ -56,14 +99,49 @@
         ];
 
         let currentAudio = null;
+        let isDrawing = false;
 
-        function drawFortune() {
-            // 產生 0 到 99.99 之間的亂數
+        function startDraw() {
+            if (isDrawing) return;
+            isDrawing = true;
+
+            const btn = document.getElementById("drawBtn");
+            const resultDiv = document.getElementById("result");
+
+            // 鎖定按鈕與設定動畫狀態
+            btn.disabled = true;
+            btn.innerText = "神明指點中...";
+            resultDiv.classList.remove("reveal");
+            resultDiv.classList.add("rolling");
+
+            // 停止上一首語音
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // 創造文字快速切換的視覺效果
+            let shuffleInterval = setInterval(() => {
+                let randomTemp = fortunes[Math.floor(Math.random() * fortunes.length)].name;
+                resultDiv.innerText = randomTemp;
+            }, 50);
+
+            // 1.5 秒後揭曉真正結果
+            setTimeout(() => {
+                clearInterval(shuffleInterval);
+                finishDraw();
+            }, 1500);
+        }
+
+        function finishDraw() {
+            const btn = document.getElementById("drawBtn");
+            const resultDiv = document.getElementById("result");
+
+            // 機率運算
             let rand = Math.random() * 100;
             let cumulative = 0;
             let selectedFortune = null;
 
-            // 根據機率區間判斷抽中哪一支籤
             for (let i = 0; i < fortunes.length; i++) {
                 cumulative += fortunes[i].chance;
                 if (rand < cumulative) {
@@ -72,16 +150,17 @@
                 }
             }
 
-            // 顯示文字
-            document.getElementById("result").innerText = selectedFortune.name;
+            // 顯示最終結果與套用彈出特效
+            resultDiv.innerText = selectedFortune.name;
+            resultDiv.classList.remove("rolling");
+            resultDiv.classList.add("reveal");
 
-            // 停止上一首正在播放的語音（避免連抽時聲音重疊）
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-            }
+            // 恢復按鈕狀態
+            btn.disabled = false;
+            btn.innerText = "抽出今日運勢";
+            isDrawing = false;
 
-            // 播放對應的語音
+            // 播放對應語音
             currentAudio = new Audio(selectedFortune.audio);
             currentAudio.play().catch(e => {
                 console.log("請確認音檔是否存在，或瀏覽器是否允許自動播放聲音。");
