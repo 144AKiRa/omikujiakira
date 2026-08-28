@@ -11,27 +11,30 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f9;
+            background-color: #f3e8ff; /* 柔和的淺紫背景 */
             font-family: "Microsoft JhengHei", sans-serif;
         }
         #result {
             font-size: 120px;
             font-weight: bold;
-            color: #d9534f;
+            color: #5b21b6; /* 抽籤結果使用深紫色，確保高對比度與易讀性 */
             margin-bottom: 30px;
             min-height: 150px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 4px rgba(91,33,182,0.2);
         }
         button {
             padding: 15px 40px;
             font-size: 24px;
             cursor: pointer;
-            background-color: #5cb85c;
+            background-color: #8b5cf6; /* 按鈕使用主視覺亮紫色 */
             color: white;
             border: none;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 6px rgba(139,92,246,0.3);
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        button:hover {
+            background-color: #7c3aed; /* 滑鼠游標移過去時，顏色會變深一點 */
         }
         button:active {
             transform: scale(0.95);
